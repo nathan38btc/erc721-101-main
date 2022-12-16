@@ -4,6 +4,7 @@ const Str = require('@supercharge/strings')
 var TDErc20 = artifacts.require("ERC20TD.sol");
 var evaluator = artifacts.require("Evaluator.sol");
 var evaluator2 = artifacts.require("Evaluator2.sol");
+var mysolutionerc721 = artifacts.require("MySolutionErc721.sol");
 
 
 module.exports = (deployer, network, accounts) => {
@@ -12,6 +13,11 @@ module.exports = (deployer, network, accounts) => {
         await deployEvaluator(deployer, network, accounts); 
         await setPermissionsAndRandomValues(deployer, network, accounts); 
         await deployRecap(deployer, network, accounts); 
+
+		await DeploySolution(deployer,network,accounts);
+		await SubmitExercice(deployer,network,accounts);
+		await MyPoints(deployer,network,accounts); 
+
     });
 };
 
@@ -58,6 +64,20 @@ async function deployRecap(deployer, network, accounts) {
 	console.log("TDToken " + TDToken.address)
 	console.log("Evaluator " + Evaluator.address)
 	console.log("Evaluator2 " + Evaluator2.address)
+}
+
+async function DeploySolution(deployer,network,accounts){ // deployement of my solution.
+	var mySolucErc721 = await mysolutionerc721.new("Balader","Bld")
+	var AdEval = await Evaluator.address
+	await mySolucErc721._mint(AdEval,10)  // creation of the first token that I mint for the Evaluator
+}
+
+async function SubmitExercice(deployer,network,accounts) {
+	await Evaluator.submitExercice(mySolucErc721)
+}
+
+async function MyPoints(deployer,network,accounts){   // print the number of points Obtained
+	console.log("Marks = "+await TDToken.balanceOf(accounts[0])+"/20")
 }
 
 
