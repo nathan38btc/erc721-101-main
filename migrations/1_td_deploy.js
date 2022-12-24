@@ -12,9 +12,8 @@ module.exports = (deployer, network, accounts) => {
         await deployTDToken(deployer, network, accounts); 
         await deployEvaluator(deployer, network, accounts); 
         await setPermissionsAndRandomValues(deployer, network, accounts); 
-        await deployRecap(deployer, network, accounts); 
+        //await deployRecap(deployer, network, accounts); 
 
-		await DeploySolution(deployer,network,accounts);
 		await SubmitExercice(deployer,network,accounts);
 		await MyPoints(deployer,network,accounts); 
 
@@ -66,14 +65,9 @@ async function deployRecap(deployer, network, accounts) {
 	console.log("Evaluator2 " + Evaluator2.address)
 }
 
-async function DeploySolution(deployer,network,accounts){ // deployement of my solution.
-	var mySolucErc721 = await mysolutionerc721.new("Balader","Bld")
-	var AdEval = await Evaluator.address
-	await mySolucErc721._mint(AdEval,10)  // creation of the first token that I mint for the Evaluator
-}
-
 async function SubmitExercice(deployer,network,accounts) {
-	await Evaluator.submitExercice(mySolucErc721)
+	var mySolucErc721 = await mysolutionerc721.new("Balader","Bld",await Evaluator.address)
+	await Evaluator.submitExercice(mySolucErc721.address)
 }
 
 async function MyPoints(deployer,network,accounts){   // print the number of points Obtained

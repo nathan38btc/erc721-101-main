@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract mysolutionerc721 is IExerciceSolution,ERC721 {
 
 
-    constructor (string memory name_, string memory symbol_) ERC721(name_,symbol_) public {
-        
+    constructor (string memory name_, string memory symbol_,address evaluator) ERC721(name_,symbol_) public {
+        _mint(evaluator, 1);
     }
 
     //function of IExerciceSolution.sol function :
