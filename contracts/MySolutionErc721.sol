@@ -11,6 +11,7 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
     mapping(uint => bool) public wingsToken;
     mapping(uint => uint) public legsToken;
     mapping(uint => uint) public sexToken;
+    mapping(address => bool) public breeder;
 
 
 
@@ -29,16 +30,17 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
     }
 
     //function of IExerciceSolution.sol function :
-    function isBreeder(address account) external override returns (bool){
-
+    function isBreeder(address account) external  override returns (bool){
+        return breeder[account];
     }
 
 	function registrationPrice() external override returns (uint256){
-
+        return 0.0001 ether;
     }
 
 	function registerMeAsBreeder() external override payable{
-
+        require(msg.value > this.registrationPrice());
+        breeder[msg.sender] = true;
     }
 
 	function declareAnimal(uint sex, uint legs, bool wings, string calldata name) external override returns (uint256){
