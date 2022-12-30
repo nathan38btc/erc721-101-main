@@ -6,28 +6,44 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract mysolutionerc721 is IExerciceSolution,ERC721 {
 
-    // NFT particularities
-    mapping(uint => string) public  nameToken;
-    mapping(uint => bool) public wingsToken;
-    mapping(uint => uint) public legsToken;
-    mapping(uint => uint) public sexToken;
+    struct Animal{ // NFT particularities
+        string name;
+        bool wings;
+        uint legs;
+        uint sex;
+    }
+
+    mapping(uint => Animal) public NFTdetails; // link a NFT to its detail.
     mapping(address => bool) public breeder;
 
+    address public proprio;
 
 
-    constructor (string memory name_, string memory symbol_,address evaluator) ERC721(name_,symbol_) public {
+
+    constructor (string memory name_, string memory symbol_) ERC721(name_,symbol_) public {
+        proprio = msg.sender;
     }
 
+
+    modifier ContractOwner(){
+        require(msg.sender == proprio,"This account doesn't have the right to create Animal Token");
+        _;
+    }
+    
     // function for Animal creation 
 
-    function Creation(address _to,uint _id,string memory _name,bool _wings,uint _legs,uint _sex) public {
-        require(msg.sender == 0x73357Cd45BF8183fde040AbaA4b03209e3d8D104, "This account doesn't have the right to create Animal Token");
+    function Creation(address _to,uint _id,string memory _name,bool _wings,uint _legs,uint _sex) public ContractOwner {
         _mint(_to, _id);
-        nameToken[_id]=_name;
-        wingsToken[_id]=_wings;
-        legsToken[_id]=_legs;
-        sexToken[_id]=_sex;
+
+        Animal storage a = NFTdetails[_id];
+
+        a.name = _name;
+        a.wings=_wings;
+        a.legs = _legs;
+        a.sex=_sex;
+
     }
+
 
     //function of IExerciceSolution.sol function :
     function isBreeder(address account) external  override returns (bool){
@@ -48,7 +64,8 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
     }
 
 	function getAnimalCharacteristics(uint animalNumber) external override returns (string memory _name, bool _wings, uint _legs, uint _sex){
-        return (nameToken[animalNumber],wingsToken[animalNumber],legsToken[animalNumber],sexToken[animalNumber]);
+        Animal storage a = NFTdetails[animalNumber];
+        return (a.name,a.wings,a.legs,a.sex);
     }
 
 	function declareDeadAnimal(uint animalNumber) external override {

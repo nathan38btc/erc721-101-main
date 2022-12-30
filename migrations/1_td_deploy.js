@@ -24,9 +24,9 @@ module.exports = (deployer, network, accounts) => {
 		await mySolucErc721.Creation(Evaluator.address,2,await Evaluator.readName(accounts[0]),await Evaluator.readWings(accounts[0]),await Evaluator.readLegs(accounts[0]),await Evaluator.readSex(accounts[0]),{from:accounts[0]});
 		await Evaluator.ex2b_testDeclaredAnimal(2);
 		
-		console.log("result : " + JSON.stringify(await mySolucErc721.isBreeder("0xF344762D9D15Bf16fE26e5890DE74E20009551A5")));
+		console.log("result : " + JSON.stringify(await mySolucErc721.isBreeder(Evaluator.address)));
+		
 		//Evaluator needs eth for ex3 :
-
 		// exo 3 certainement un probleme avec la valeur par default du mapping breeder to false ?
 		await web3.eth.personal.sendTransaction({from : accounts[0],to : Evaluator.address,value : web3.utils.toBN(web3.utils.toWei("0.05", "ether"))});
 		await Evaluator.ex3_testRegisterBreeder();	
