@@ -6,6 +6,10 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract mysolutionerc721 is IExerciceSolution,ERC721 {
 
+    address public proprio;
+    uint256 public NFTnumber;
+    uint256 public Breederprice;
+
     struct Animal{ // NFT particularities
         string name;
         bool wings;
@@ -13,15 +17,16 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
         uint sex;
     }
 
-    mapping(uint => Animal) public NFTdetails; // link a NFT to its detail.
+    mapping(uint => Animal) public NFTdetails; // link a NFT to its details.
     mapping(address => bool) public breeder;
 
-    address public proprio;
 
 
-
-    constructor (string memory name_, string memory symbol_) ERC721(name_,symbol_) public {
+    constructor (string memory name_, string memory symbol_,uint _price) ERC721(name_,symbol_) public {
         proprio = msg.sender;
+        Breederprice = _price;
+        NFTnumber = 1;
+        
     }
 
 
@@ -29,14 +34,17 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
         require(msg.sender == proprio,"This account doesn't have the right to create Animal Token");
         _;
     }
-    
+    function monETH() external returns (uint256){
+        return address(this).balance;
+    }
     // function for Animal creation 
 
-    function Creation(address _to,uint _id,string memory _name,bool _wings,uint _legs,uint _sex) public ContractOwner {
-        _mint(_to, _id);
+    function Creation(address _to,string memory _name,bool _wings,uint _legs,uint _sex) public ContractOwner {
+        _mint(_to, NFTnumber);
+        Animal storage a = NFTdetails[NFTnumber];
 
-        Animal storage a = NFTdetails[_id];
-
+        NFTnumber = NFTnumber + 1;
+        
         a.name = _name;
         a.wings=_wings;
         a.legs = _legs;
@@ -51,16 +59,18 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
     }
 
 	function registrationPrice() external override returns (uint256){
-        return 0.0001 ether;
+        return Breederprice;
     }
 
 	function registerMeAsBreeder() external override payable{
-        require(msg.value > this.registrationPrice());
-        breeder[msg.sender] = true;
+        require(msg.value ==  this.registrationPrice(), "not the correct ether amount for being register as a breeder");
+        breeder[msg.sender] = true; 
     }
 
 	function declareAnimal(uint sex, uint legs, bool wings, string calldata name) external override returns (uint256){
-
+        require(this.isBreeder(msg.sender));
+        Creation(msg.sender, name, wings, legs, sex);
+        return(NFTnumber-1);
     }
 
 	function getAnimalCharacteristics(uint animalNumber) external override returns (string memory _name, bool _wings, uint _legs, uint _sex){
@@ -69,12 +79,20 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
     }
 
 	function declareDeadAnimal(uint animalNumber) external override {
+        require(ownerOf(animalNumber)==msg.sender);
 
+        Animal storage a = NFTdetails[animalNumber];
+        a.name = "";
+        a.wings = false;
+        a.legs = 0;
+        a.sex = 0;
+
+        _burn(animalNumber);
     }
 
 	function tokenOfOwnerByIndex(address owner, uint256 index) public view override(IExerciceSolution,ERC721) returns (uint256){
-
-    }
+            // return(_tokenOwners[owner][index]);
+    }   
 
 	// Selling functions
 	function isAnimalForSale(uint animalNumber) external view override returns (bool){

@@ -107,11 +107,12 @@ contract Evaluator
 		// Verify that contract is not a registeredBreeder yet
 		require(!studentExerciceSolution[msg.sender].isBreeder(address(this)), "Evaluator is already breeder");
 
-		// Register as a breeder
+		// Register as a breeder 
 		uint256 registrationPrice = studentExerciceSolution[msg.sender].registrationPrice();
-		require(address(this).balance >= registrationPrice, "Evaluator does not have enough ETH, plz giv eth");
+		require(address(this).balance >= registrationPrice, "Evaluator does not have enough ETH, plz giv eth"); // erreur sur address(this).balance
 		studentExerciceSolution[msg.sender].registerMeAsBreeder.value(registrationPrice)();
 		require(studentExerciceSolution[msg.sender].isBreeder(address(this)), "Evaluator is not a breeder");
+
 		// Crediting points
 		if (!exerciceProgression[msg.sender][3])
 		{
@@ -127,6 +128,7 @@ contract Evaluator
 		require(exerciceProgression[msg.sender][0], "No solution submitted");
 
 		// Verify that contract is a registeredBreeder 
+
 		require(studentExerciceSolution[msg.sender].isBreeder(address(this)), "Evaluator is not a breeder");
 		uint256 initBalance = studentExerciceSolution[msg.sender].balanceOf(address(this));
 		string memory name = readName(msg.sender);
