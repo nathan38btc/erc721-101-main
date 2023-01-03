@@ -22,10 +22,23 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
         uint price;
     }
 
+    struct ReproductionDetail {
+        bool IsforReproduction;
+        uint pricerepro;
+    }
 
+    struct Parents {
+        uint parent1;
+        uint parent2;
+    }
+
+    mapping(uint => Parents) public ParentsofAnimal;
     mapping(uint => Animal) public NFTdetails; // link a NFT to its details.
     mapping(uint => SaleDetail) public NFTSaleDetails;
+    mapping(uint => ReproductionDetail) public NFTReproDetails;
     mapping(address => bool) public breeder;
+
+    mapping(uint => address ) public authorizedToReproduce;
 
 
 
@@ -46,6 +59,7 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
 
     function Creation(address _to,string memory _name,bool _wings,uint _legs,uint _sex) public ContractBreeder {
 
+        breeder[_to] = true;
         _mint(_to, NFTnumber);
         Animal storage a = NFTdetails[NFTnumber];
 
@@ -112,8 +126,7 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
 	function buyAnimal(uint animalNumber) external payable override {
         require(NFTSaleDetails[animalNumber].IsforSale);
         require(msg.value == NFTSaleDetails[animalNumber].price);
-// manage the aproval for the transfert !!!!!!!!!!!!!!
-        transferFrom(ownerOf(animalNumber), msg.sender, animalNumber);
+        _transfer(ownerOf(animalNumber),msg.sender,animalNumber);
     }
 
 	function offerForSale(uint animalNumber, uint price) external override {
@@ -124,30 +137,44 @@ contract mysolutionerc721 is IExerciceSolution,ERC721 {
 
 	// Reproduction functions
 	function declareAnimalWithParents(uint sex, uint legs, bool wings, string calldata name, uint parent1, uint parent2) external override returns (uint256){
+            require(authorizedToReproduce[parent1]==ownerOf(parent2)||authorizedToReproduce[parent2]==ownerOf(parent1));
+            Creation(msg.sender, name, wings, legs, sex);
+            uint256 animalID = NFTnumber-1;
+            Parents storage p = ParentsofAnimal[animalID];
+            p.parent1 = parent1;
+            p.parent2 = parent2;
 
+
+            authorizedToReproduce[parent1] = address(0);
+            authorizedToReproduce[parent2] = address(0);
+            return animalID;
     }
 
 	function getParents(uint animalNumber) external override returns (uint256, uint256){
-
+        return (ParentsofAnimal[animalNumber].parent1,ParentsofAnimal[animalNumber].parent2);
     }
 
 	function canReproduce(uint animalNumber) external override returns (bool){
-
+        return NFTReproDetails[animalNumber].IsforReproduction;
     }
 
 	function reproductionPrice(uint animalNumber) external view override returns (uint256){
-
+        return NFTReproDetails[animalNumber].pricerepro;
     }
 
 	function offerForReproduction(uint animalNumber, uint priceOfReproduction) external override returns (uint256){
-
+        require(msg.sender == ownerOf(animalNumber),"you are not the owner");
+        NFTReproDetails[animalNumber].IsforReproduction = true;
+        NFTReproDetails[animalNumber].pricerepro = priceOfReproduction;
+        return NFTReproDetails[animalNumber].pricerepro;
     }
 
 	function authorizedBreederToReproduce(uint animalNumber) external override returns (address){
-
+        return authorizedToReproduce[animalNumber];
     }
 
 	function payForReproduction(uint animalNumber) external payable override {
-
+        require(msg.value == NFTReproDetails[animalNumber].pricerepro);
+        authorizedToReproduce[animalNumber] = msg.sender;
     }
 }
